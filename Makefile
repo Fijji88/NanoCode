@@ -1,10 +1,10 @@
 PORT=/dev/ttyUSB0
+TARGET=blinkyLED
 MCU=atmega328p
 CFLAGS=-g -Wall -mcall-prologues -mmcu=$(MCU) -Os
 LDFLAGS=-Wl,-gc-sections -Wl,-relax
 CC=avr-gcc
-TARGET=BlinkingLED
-OBJECT_FILES=BlinkingLED.o
+OBJECT_FILES=$(TARGET).o
 
 all: $(TARGET).hex
 
@@ -12,10 +12,11 @@ clean:
 	rm -f *.o *.hex *.obj *.hex
 
 %.hex: %.obj
-	avr-objcopy -R .eeprom -O ihex $< $@
+	avr-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature $< $@
 
 %.obj: $(OBJECT_FILES)
 	$(CC) $(CFLAGS) $(OBJECT_FILES) $(LDFLAGS) -o $@
 
 program: $(TARGET).hex
-	avrdude -p $(MCU) -c avr109 -P $(PORT) -U flash:w:$(TARGET).hex
+	avrdude -p atmega328p -c avrisp -b 19200 -P /dev/ttyUSB0 -U flash:w:$(TARGET).hex
+
